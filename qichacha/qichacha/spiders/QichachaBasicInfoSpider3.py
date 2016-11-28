@@ -27,25 +27,42 @@ class QichachaBasicInfoSpider(BaseSpider):
     #读取公司对应的URL
     def read_company_url(self):
         file_input = open(URL_AND_COMPANYNAME_PATH[2], "r")
-
-        if os.path.exists(RESULT_PATH[2]) is False:
-            output = open(RESULT_PATH[2], "w")
-            output.close()
+        
+        for i in range(0, 4):
+            if os.path.exists(RESULT_PATH[i]) is False:
+                output = open(RESULT_PATH[i], "w")
+                output.close()
         result_input = open(RESULT_PATH[2], "r")
         res_set = set()
-        for line in result_input.readlines():
-            url = line.split("\t")[2].replace("\n", "")
-            res_set.add(url)
+        for i in range(0, 4):
+            result_input = open(RESULT_PATH[i], "r")
+            for line in result_input.readlines():
+                url = line.split("\t")[3].replace("\n", "")
+                res_set.add(url)
+            result_input.close()
 
         for line in file_input.readlines():
             url = line.split("\t")[3].replace("\n", "")
             if url not in res_set:
                 self.url_set.add(line)
+        res_set.clear()
+        file_input.close()
 
     #抽取公司页面对应的详细信息以及保存公司对应的html文件
     def basic_info_parse(self, response):
         line = response.meta["line"]
 
+        if response.body.find('请先登录或者您没有这个权限！') != -1:
+            print "!!!!!!!!!!!!!!!!!!!!!!!!!!请您登录!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            os._exit(1)
+            return
+
+        s = "<script>window.location.href=\'http://www.qichacha.com/index_verify?type=companyview&back="
+        if response.body.find(s) != -1 or response.body.find("您的操作过于频繁，验证后再操作") != -1:
+            # self.key_set.add(key)
+            print "!!!!!!!!!!!!!!!!!!!!!!!!!!您的操作过于频繁，验证后再操作!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            os._exit(1)
+            return
         basic_info = response.xpath('//div[@class="panel-body text-sm"]/ul/li').extract()
         content = {}
         address = ""

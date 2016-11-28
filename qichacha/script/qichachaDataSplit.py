@@ -3,8 +3,6 @@ import re
 import sys
 import os
 import random
-import jieba
-import jieba.posseg as pseg
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -46,18 +44,18 @@ def file_split(inputPath, outputPathDir):
             companyNameSet.add(line)
         else:
             break
-
+    avg = len(companyNameSet) / 4
     for i in companyNameSet:
         keySet.add(i)
-        if len(keySet) == 10000:
+        if len(keySet) == avg:
             count += 1
             fo = open(outputPathDir + "/%d.txt" % count, "w")
             for key in keySet:
                 fo.write(key)
             fo.close()
             keySet.clear()
-    count += 1
-    fo = open(outputPathDir + "/%d.txt" % count, "w")
+    
+    fo = open(outputPathDir + "/%d.txt" % count, "a")
 
     for key in keySet:
         fo.write(key)
